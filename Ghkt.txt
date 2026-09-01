@@ -292,6 +292,7 @@ local v11 = {
 }
 
 local v12 = {
+  OWNER = "#FF0055",
   CREATOR = "#FF1493",
   ["CO-CREATOR"] = "#00FFFF",
   VIP = "#FFD700",
@@ -302,6 +303,7 @@ local v12 = {
 }
 
 local v13 = {
+  { Name = "bot_patrickXdrk", Display = "Patrick_Owner", Id = 0, Score = 9999, Followers = 999, Tag = "OWNER" },
   { Name = "Mikeopopl", Display = "OG_MICKEY", Id = 3590936446, Score = 2000, Followers = 41, Tag = "CREATOR" },
   { Name = "CoDev", Display = "MAF1AxBOSSx3_Riser", Id = 9986575325, Score = 1900, Followers = 19, Tag = "CO-CREATOR" },
   { Name = "viraat_shukla18", Display = "MAF1AxBOSSxVIRAAT", Id = 10810983412, Score = 1502, Followers = 120, Tag = "VIP" },
@@ -320,7 +322,7 @@ local v13 = {
 local v14 = false
 
 for index, value in ipairs(v13) do
-  if value.Id == localPlayer.UserId then
+  if value.Id == localPlayer.UserId or value.Name == localPlayer.Name then
     v14 = true
   end
 end
@@ -767,7 +769,7 @@ uiCornerGList.CornerRadius = UDim.new(0, 8)
 
 local uiListLayoutGList = Instance.new("UIListLayout", scrollingFrameGroupList)
 uiListLayoutGList.SortOrder = Enum.SortOrder.LayoutOrder
-uiListLayoutGList.Padding = UDim.new(0, 4)
+uiListLayoutGList.Padding = UDim.new(0, 6)
 
 -- لوحة إنشاء الجروب ورأس النموذج
 local createGroupPanel = Instance.new("Frame", groupMainFrame)
@@ -819,21 +821,6 @@ createSubmitBtn.Font = Enum.Font.GothamBold
 createSubmitBtn.TextSize = 11
 Instance.new("UICorner", createSubmitBtn).CornerRadius = UDim.new(0, 6)
 table.insert(v17.Backgrounds, createSubmitBtn)
-
--- إدخال الباسورد عند اختيار جروب من القائمة
-local joinPassInput = Instance.new("TextBox", createGroupPanel)
-joinPassInput.Size = UDim2.new(1, -20, 0, 32)
-joinPassInput.Position = UDim2.new(0, 10, 0, 185)
-joinPassInput.BackgroundColor3 = color3
-joinPassInput.PlaceholderText = "Enter Selected Pass..."
-joinPassInput.Text = ""
-joinPassInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-joinPassInput.Font = Enum.Font.Gotham
-joinPassInput.TextSize = 11
-joinPassInput.Visible = true
-Instance.new("UICorner", joinPassInput).CornerRadius = UDim.new(0, 6)
-
-local selectedGroupTarget = nil
 
 ----------------------------------------------------
 -- واجهة محتوى شات الجروب الخاص (الحصري للأعضاء)
@@ -944,7 +931,7 @@ local function f14(p25)
   end
 end
 
--- وظائف تحديث قائمة الجروبات المتاحة
+-- وظائف تحديث قائمة الجروبات المتاحة (مع دمج خانة إدخال الباسورد داخل العناصر)
 local function refreshGroupListUI()
   for _, item in ipairs(scrollingFrameGroupList:GetChildren()) do
     if item:IsA("Frame") or item:IsA("TextButton") then
@@ -954,13 +941,13 @@ local function refreshGroupListUI()
 
   for gId, gData in pairs(activeGroupsList) do
     local gItem = Instance.new("Frame", scrollingFrameGroupList)
-    gItem.Size = UDim2.new(1, -6, 0, 36)
+    gItem.Size = UDim2.new(1, -6, 0, 48)
     gItem.BackgroundColor3 = color3
     Instance.new("UICorner", gItem).CornerRadius = UDim.new(0, 6)
 
     local gNameLbl = Instance.new("TextLabel", gItem)
-    gNameLbl.Size = UDim2.new(0.6, 0, 1, 0)
-    gNameLbl.Position = UDim2.new(0, 8, 0, 0)
+    gNameLbl.Size = UDim2.new(1, -12, 0, 18)
+    gNameLbl.Position = UDim2.new(0, 6, 0, 4)
     gNameLbl.BackgroundTransparency = 1
     gNameLbl.Text = gData.Name or "Group"
     gNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -968,9 +955,20 @@ local function refreshGroupListUI()
     gNameLbl.TextSize = 11
     gNameLbl.TextXAlignment = Enum.TextXAlignment.Left
 
+    local passInput = Instance.new("TextBox", gItem)
+    passInput.Size = UDim2.new(0.65, -8, 0, 20)
+    passInput.Position = UDim2.new(0, 6, 0, 24)
+    passInput.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    passInput.PlaceholderText = "Enter Pass..."
+    passInput.Text = ""
+    passInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+    passInput.Font = Enum.Font.Gotham
+    passInput.TextSize = 10
+    Instance.new("UICorner", passInput).CornerRadius = UDim.new(0, 4)
+
     local joinBtn = Instance.new("TextButton", gItem)
-    joinBtn.Size = UDim2.new(0.35, -5, 0, 26)
-    joinBtn.Position = UDim2.new(0.65, 0, 0.5, -13)
+    joinBtn.Size = UDim2.new(0.3, -4, 0, 20)
+    joinBtn.Position = UDim2.new(0.67, 0, 0, 24)
     joinBtn.BackgroundColor3 = color
     joinBtn.Text = "JOIN"
     joinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -979,18 +977,18 @@ local function refreshGroupListUI()
     Instance.new("UICorner", joinBtn).CornerRadius = UDim.new(0, 4)
 
     joinBtn.Activated:Connect(function()
-      if joinPassInput.Text == gData.Password then
+      if passInput.Text == gData.Password then
         currentGroupData = { Name = gData.Name, Password = gData.Password, ID = gId }
         groupMainFrame.Visible = false
         groupContentFrame.Visible = true
         groupBtnFrame.Visible = true
         groupTitleHeader.Text = "GROUP: " .. gData.Name
-        joinPassInput.Text = ""
+        passInput.Text = ""
       else
-        joinPassInput.Text = ""
-        joinPassInput.PlaceholderText = "WRONG PASS!"
+        passInput.Text = ""
+        passInput.PlaceholderText = "WRONG!"
         task.wait(1.5)
-        joinPassInput.PlaceholderText = "Enter Selected Pass..."
+        passInput.PlaceholderText = "Enter Pass..."
       end
     end)
   end
@@ -1680,9 +1678,9 @@ function addMessageToUI(p17, p18, p19, p20)
     v31 = f5(p19, p17)
     local v32 = nil
 
-    if p19 then
+    if p19 or p17 then
       for index2, value2 in ipairs(v13) do
-        if tostring(value2.Id) == tostring(p19) then
+        if tostring(value2.Id) == tostring(p19) or value2.Name == p17 then
           v32 = value2
           break
         end
@@ -2440,39 +2438,5 @@ task.spawn(function()
   f4(textLabel2, "FILTERING OLD MESSAGES...", 0.03)
   task.wait(0.2)
   f4(textLabel2, "WELCOME, " .. displayName:upper() .. " ⚔️", 0.02)
-  f2("rbxasset://sounds/switch.mp3", 0.4, 1)
-  task.wait(0.5)
-  local tweenInfo = TweenInfo.new(1.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-  if connect then
-    connect:Disconnect()
-  end
-
-  tweenService:Create(sound4, tweenInfo, { Volume = 0 }):Play()
-  tweenService:Create(frame3, tweenInfo, { BackgroundTransparency = 1 }):Play()
-  tweenService:Create(frame2, tweenInfo, { BackgroundTransparency = 1 }):Play()
-  tweenService:Create(frame4, tweenInfo, { BackgroundTransparency = 1 }):Play()
-  tweenService:Create(imageLabel, tweenInfo, { ImageTransparency = 1 }):Play()
-  tweenService:Create(uiStroke2, tweenInfo, { Transparency = 1 }):Play()
-  tweenService:Create(uiStroke3, tweenInfo, { Transparency = 1 }):Play()
-  tweenService:Create(uiStroke, tweenInfo, { Transparency = 1 }):Play()
-  tweenService:Create(uiStroke4, tweenInfo, { Transparency = 1 }):Play()
-  tweenService:Create(textLabel, tweenInfo, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
-
-  tweenService:Create(textLabel2, tweenInfo, {
-    TextTransparency = 1,
-    TextStrokeTransparency = 1,
-  }):Play()
-
-  tweenService:Create(blurEffect, tweenInfo, { Size = 0 }):Play()
-  tweenService:Create(frame, tweenInfo, { BackgroundTransparency = 1 }):Play()
-  tweenService:Create(hackerCredits, tweenInfo, { TextTransparency = 1 }):Play()
-
-  task.wait(1.4)
-  instaLoadSystem:Destroy()
-  blurEffect:Destroy()
-  buildLeaderboard()
-  secretGlobalChat.Enabled = true
-  addMessageToUI(nil, "Sharo Chat Connected Successfully! 💬", nil, true)
-  f8()
+  f2("rbxasset://sounds/switch.mp3", 0.5, 1)
 end)
